@@ -1,37 +1,36 @@
-//commit 2
+package org.example;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Dish {
     private int restro_id;
-    private List<String> dishes;
+    private Map<Double, DishDetails> dishMap;
 
-    public Dish(int restro_id, List<String> dishes) {
+    public Dish(int restro_id, Map<Double, DishDetails> dishMap) {
         this.restro_id = restro_id;
-        this.dishes = dishes;
+        this.dishMap = dishMap;
     }
 
     public int getRestroId() {
         return restro_id;
     }
 
-    public List<String> getDishes() {
-        return dishes;
+    public Map<Double, DishDetails> getDishMap() {
+        return dishMap;
     }
 
     public void setRestroId(int restro_id) {
         this.restro_id = restro_id;
     }
 
-    public void setDishes(List<String> dishes) {
-        this.dishes = dishes;
+    public void setDishMap(Map<Double, DishDetails> dishMap) {
+        this.dishMap = dishMap;
     }
 
     public static void main(String[] args) throws IOException {
@@ -45,17 +44,19 @@ public class Dish {
         while ((line = dishReader.readLine()) != null) {
             String[] partsOfLine = line.split(",");
 
-            if (partsOfLine.length >= 2) {
+            if (partsOfLine.length >= 4) {
                 int restro_id = Integer.parseInt(partsOfLine[0].trim());
-                String dish = partsOfLine[1].trim();
+                double dishId = Double.parseDouble(partsOfLine[1].trim());
+                String dishName = partsOfLine[2].trim();
+                double dishPrice = Double.parseDouble(partsOfLine[3].trim());
 
                 if (dishMap.containsKey(restro_id)) {
                     Dish existingDish = dishMap.get(restro_id);
-                    existingDish.getDishes().add(dish);
+                    existingDish.getDishMap().put(dishId, new DishDetails(dishName, dishPrice));
                 } else {
-                    List<String> dishes = new ArrayList<>();
-                    dishes.add(dish);
-                    Dish newDish = new Dish(restro_id, dishes);
+                    Map<Double, DishDetails> dishDetailsMap = new HashMap<>();
+                    dishDetailsMap.put(dishId, new DishDetails(dishName, dishPrice));
+                    Dish newDish = new Dish(restro_id, dishDetailsMap);
                     dishMap.put(restro_id, newDish);
                 }
             }
@@ -63,18 +64,37 @@ public class Dish {
 
         dishReader.close();
 
-
-        int targetRestroId = 1;
+        int targetRestroId = 3;
         Dish targetDish = dishMap.get(targetRestroId);
         if (targetDish != null) {
             System.out.println("Restaurant ID: " + targetDish.getRestroId());
             System.out.println("Dishes:");
-            for (String dish : targetDish.getDishes()) {
-                System.out.println(dish);
+            for (Map.Entry<Double, DishDetails> entry : targetDish.getDishMap().entrySet()) {
+                double dishId = entry.getKey();
+                DishDetails dishDetails = entry.getValue();
+                System.out.println("Dish ID: " + dishId + ", Dish Name: " + dishDetails.getDishName() +
+                        ", Dish Price: " + dishDetails.getDishPrice());
             }
         } else {
             System.out.println("Restaurant ID not found.");
         }
     }
-}
 
+    public static class DishDetails {
+        public String dishName;
+        public double dishPrice;
+
+        public DishDetails(String dishName, double dishPrice) {
+            this.dishName = dishName;
+            this.dishPrice = dishPrice;
+        }
+
+        public String getDishName() {
+            return dishName;
+        }
+
+        public double getDishPrice() {
+            return dishPrice;
+        }
+    }
+}
